@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:lottie/lottie.dart';
 import 'package:share/share.dart';
+import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -24,12 +25,14 @@ class _DrinksScreenState extends State<DrinksScreen> {
   String greeting = '';
   String animationAsset = '';
   Color cardColor = Colors.white;
+  var now = DateTime.now();
 
   final TextEditingController _nameController = TextEditingController();
   int _floor = 1;
-  List<String> _sugarOptions = ['بدون سكر', 'مظبوط', 'زيادة', 'مانو',];
+  List<String> _sugarOptions = ['بدون سكر(سادة)', 'مظبوط', 'زيادة', 'مانو','ع الريحة'];
   String _selectedSugar = 'مظبوط';
   String _searchText = '';
+  bool buffetOpen = true;
 
   @override
   void initState() {
@@ -58,7 +61,7 @@ class _DrinksScreenState extends State<DrinksScreen> {
     } else {
       setState(() {
         greeting = 'Good Evening!';
-        cardColor = Colors.white30;
+        cardColor = Colors.white;
         animationAsset = 'assets/images/evening.json';
       });
     }
@@ -124,6 +127,7 @@ class _DrinksScreenState extends State<DrinksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white12,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         centerTitle: true,
@@ -149,9 +153,16 @@ class _DrinksScreenState extends State<DrinksScreen> {
             width: 330.0,
             child:
             Card(
+              elevation: 5,
+              borderOnForeground: true, // Set this to true if you want the border to appear on top of the card content
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
+                borderRadius: BorderRadius.circular(5), // Set the border radius of the card
+                side: BorderSide(
+                  color: Colors.grey, // Set the border color
+                  width: 1.0, // Set the border width
+                ),
               ),
+
               color: cardColor,
               child: Container(
                 width: 350.0,
@@ -237,8 +248,16 @@ class _DrinksScreenState extends State<DrinksScreen> {
           ),
           ExpansionTile(
 
-            title: Text("Set your Delivery Data",style: GoogleFonts.openSans(fontWeight: FontWeight.bold),),
-            children: [
+            title: Row(
+              children: [
+                Icon(Icons.delivery_dining,color: Colors.red,),
+                SizedBox(width: 10),
+                Text(
+                  "Set your Delivery Data",
+                  style: GoogleFonts.openSans(fontWeight: FontWeight.bold,color: Colors.brown),
+                ),
+              ],
+            ),            children: [
               Padding(
                 padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
                 child: TextField(
@@ -330,7 +349,7 @@ class _DrinksScreenState extends State<DrinksScreen> {
 
 
         Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
             child: TextField(
               style: GoogleFonts.cairo(),
               onChanged: (value) {
@@ -418,23 +437,66 @@ class _DrinksScreenState extends State<DrinksScreen> {
                       trailing: SingleChildScrollView(
                         child: Column(
                           children: [
-                            GestureDetector(
 
-                                child: Text("Request",style: GoogleFonts.openSans(color: Colors.brown),),
-                              onTap: () {
-                                _openWhatsApp(drink);
-                              },
 
-                            ),
-                            Container(
-                              child: IconButton(
-                                icon: Icon(Icons.send,color: Colors.brown,),
-                                onPressed: () {
-                                  _openWhatsApp(drink);
+
+
+                      Container(
+                        child: IconButton(
+                          icon: Icon(Icons.send,color: Colors.brown,),
+                          onPressed: () {
+                            var now = DateTime.now();
+                            if (now.weekday == DateTime.sunday || now.weekday == DateTime.monday|| now.weekday == DateTime.tuesday|| now.weekday == DateTime.wednesday|| now.weekday == DateTime.thursday) { // Only allow clicks on Saturday and Sunday
+                              if (now.hour >= 18) { // Show a message if the current time is after 5 pm
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text('Buffet Closed'),
+                                      content: Text('The buffet is closed after 5 pm on weekends.'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          child: Text('OK'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                                return null;
+                              }
+                              _openWhatsApp(drink);
+                            } else { // Show a message on weekdays
+                              var weekdayName = DateFormat('EEEE').format(now); // EEEE represents the full weekday name
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('Buffet Closed'),
+                                    content: Text('The buffet is closed on $weekdayName.'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: Text('OK'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ],
+                                  );
                                 },
-                              ),
-                            ),
-                          ],
+                              );
+                              return null;
+                            }
+                          },
+                        ),
+                      )
+
+
+
+
+                      ],
                         ),
                       ),
                     );

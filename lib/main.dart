@@ -1,6 +1,6 @@
 
+import 'package:RetailTribeBuffet/splashscreeb.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled4/splashscreeb.dart';
 
 import 'drink screen.dart';
 

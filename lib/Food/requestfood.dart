@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -19,11 +20,13 @@ class FoodScreen extends StatefulWidget {
 
 class _FoodScreenState extends State<FoodScreen> {
   final _drinksList = Foodlist();
+
   final TextEditingController _nameController = TextEditingController();
   int _floor = 1;
   List<String> _sugarOptions = ['1', '2', '3', '4',];
   String _selectedSugar = '1';
   String _searchText = '';
+  var now = DateTime.now();
 
   @override
   void initState() {
@@ -82,8 +85,16 @@ class _FoodScreenState extends State<FoodScreen> {
           SizedBox(height: 8),
           ExpansionTile(
 
-            title: Text("Set your Delivery Data",style: GoogleFonts.openSans(fontWeight: FontWeight.bold),),
-            children: [
+            title: Row(
+              children: [
+                Icon(Icons.delivery_dining,color: Colors.red,),
+                SizedBox(width: 10),
+                Text(
+                  "Set your Delivery Data",
+                  style: GoogleFonts.openSans(fontWeight: FontWeight.bold,color: Colors.brown),
+                ),
+              ],
+            ),            children: [
               Padding(
                 padding: const EdgeInsets.only(left: 10,right: 10,top: 10),
                 child: TextField(
@@ -255,22 +266,58 @@ class _FoodScreenState extends State<FoodScreen> {
                       trailing: SingleChildScrollView(
                         child: Column(
                           children: [
-                            GestureDetector(
 
-                              child: Text("Request"),
-                              onTap: () {
-                                _openWhatsApp(drink);
-                              },
-
-                            ),
                             Container(
                               child: IconButton(
-                                icon: Icon(Icons.send),
+                                icon: Icon(Icons.send,color: Colors.brown,),
                                 onPressed: () {
-                                  _openWhatsApp(drink);
+                                  var now = DateTime.now();
+                                  if (now.weekday == DateTime.sunday || now.weekday == DateTime.monday|| now.weekday == DateTime.tuesday|| now.weekday == DateTime.wednesday|| now.weekday == DateTime.thursday) { // Only allow clicks on Saturday and Sunday
+                                    if (now.hour >= 18) { // Show a message if the current time is after 5 pm
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: Text('Buffet Closed'),
+                                            content: Text('The buffet is closed after 5 pm on weekends.'),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                child: Text('OK'),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                      return null;
+                                    }
+                                    _openWhatsApp(drink);
+                                  } else { // Show a message on weekdays
+                                    var weekdayName = DateFormat('EEEE').format(now); // EEEE represents the full weekday name
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text('Buffet Closed'),
+                                          content: Text('The buffet is closed on $weekdayName.'),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              child: Text('OK'),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                    return null;
+                                  }
                                 },
                               ),
-                            ),
+                            )
                           ],
                         ),
                       ),
